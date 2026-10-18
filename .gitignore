@@ -1,0 +1,27 @@
+# PlatformIO build output and downloaded dependencies
+.pio/
+build/
+
+# Compiled firmware and intermediate files
+*.o
+*.a
+*.hex
+*.elf
+*.bin
+*.map
+
+# Local editor configuration and indexes
+.vscode/
+.idea/
+
+# OS files and temporary editor files
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+
+# Local environment variables and credentials
+.env
+.env.*
+!.env.example
