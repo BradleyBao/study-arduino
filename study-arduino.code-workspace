@@ -3,6 +3,10 @@
 		{
 			"name": "BuildCar",
 			"path": "BuildCar"
+		},
+		{
+			"name": "Repository",
+			"path": "."
 		}
 	],
 	"settings": {}
