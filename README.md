@@ -1,7 +1,23 @@
 # Arduino car (PlatformIO)
 
 The PlatformIO project is in `BuildCar/`. It targets an **Arduino Mega 2560**
-using the Arduino framework. No additional libraries are required.
+using the Arduino framework. PlatformIO installs the Servo library declared in
+`BuildCar/platformio.ini` automatically.
+
+## Source layout
+
+- `src/main.cpp`: Arduino entry points; initializes modules and calls the demo.
+- `src/move.cpp` and `include/move.h`: motor initialization, directions 0–5,
+  and the repeating four-direction movement demo.
+- `src/sensors.cpp` and `include/sensors.h`: servo initialization and control,
+  ultrasonic pin setup, and photo-reflector reading/serial output functions.
+
+Paths above are relative to `BuildCar/`. Only `main.cpp` defines `setup()` and
+`loop()`; PlatformIO compiles all `.cpp` files in `src/` together.
+`main.cpp` initializes both modules. Each loop calls `runMovementDemo()` and
+`updateSensors()`. Movement changes every three seconds without blocking;
+photo-reflector readings print every 200 ms at 9600 baud.
+Ultrasonic distance measurement is not implemented yet.
 
 ## Run from VS Code
 
@@ -13,7 +29,9 @@ using the Arduino framework. No additional libraries are required.
 
 The program starts automatically after upload or reset. It repeatedly requests
 forward, backward, left, and right movement, each for three seconds, at PWM
-100 out of 255. There is no serial output in the current program.
+100 out of 255. Open PlatformIO's Serial Monitor (`pio device monitor`) at
+9600 baud to see `Left: 0 Center: 1 Right: 0` style readings. These are digital
+0/1 values from the sensors' digital outputs connected to D2, D3, and D4.
 For the first upload, raise the wheels clear of the surface because the motors
 start automatically.
 
@@ -46,7 +64,7 @@ pio run --target upload --upload-port /dev/ttyACM0
 
 ## Motor connections
 
-`BuildCar/src/main.cpp` expects these connections to motor driver inputs:
+`BuildCar/src/move.cpp` expects these connections to motor driver inputs:
 
 | Motor | PWM / enable pin | Direction input 1 | Direction input 2 |
 | --- | --- | --- | --- |
