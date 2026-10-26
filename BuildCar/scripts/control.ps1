@@ -1,4 +1,4 @@
-# ===== 引入 Win32 物理按键 API =====
+# ===== Win32 API =====
 Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;

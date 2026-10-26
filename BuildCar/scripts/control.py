@@ -1,3 +1,7 @@
+
+# ! THIS PYTHON SCRIPT IS IN BETA, THE FUNCTION IT PRESENTED IS NOT IDEAL
+# TODO Further development of this script is needed
+
 import serial
 import time
 from pynput import keyboard
