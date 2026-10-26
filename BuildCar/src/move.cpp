@@ -21,8 +21,7 @@ namespace {
 #define PINA 20
 #define PINB 21
 
-static unsigned long lastCmdTime = 0;
-const unsigned long CMD_TIMEOUT = 100;
+
 volatile int angle = 0;
 
 void setMotor(int speedPin, int d1Pin, int d2Pin, int speed, bool forward) {
@@ -52,37 +51,12 @@ void initMotors() {
   attachInterrupt(0, rotateA, RISING);
 }
 
-
-
 void listenKeys() {
   if (Serial.available() > 0) {
       char inChar = Serial.read();
       if (inChar == '\n' || inChar == '\r') return;
       Serial.println("Key pressed: " + String(inChar));
     }
-}
-
-void gameControl(){
-  if (Serial.available() > 0) {
-    char key = Serial.read();
-    Serial.println("Key pressed: " + String(key));
-    switch (key) {
-      case 'w': case 'W': move(120, 0); lastCmdTime = millis(); break; // Forward
-      case 'a': case 'A': move(120, 1); lastCmdTime = millis(); break; // Left
-      case 'd': case 'D': move(120, 2); lastCmdTime = millis(); break; // Right
-      case 's': case 'S': move(120, 3); lastCmdTime = millis(); break; // Backward
-      case 'q': case 'Q': move(120, 4); lastCmdTime = millis(); break; // Left Forward
-      case 'e': case 'E': move(120, 5); lastCmdTime = millis(); break; // Right Forward
-      case ' ': case 'x': move(0, 0);   lastCmdTime = 0;        break; // Stop
-      default: break;
-    }
-  }
-
-  // If no command has been received for a certain time, stop the motors
-  if (lastCmdTime > 0 && (millis() - lastCmdTime > CMD_TIMEOUT)) {
-    move(0, 0);
-    lastCmdTime = 0; // Reset timer
-  }
 }
 
 void moveWithKeys() {
@@ -125,6 +99,8 @@ void move(int speed, int direction) {
     // 3: Backward
     // 4: Left Forward
     // 5: Right Forward
+    // 6: Left Backward
+    // 7: Right Backward
 
   if (direction == 0) {
     setMotor(FRS, FRD1, FRD2, speed, true);
@@ -156,6 +132,16 @@ void move(int speed, int direction) {
     setMotor(FLS, FLD1, FLD2, speed, true);
     setMotor(RRS, RRD1, RRD2, speed / 3, true);
     setMotor(RLS, RLD1, RLD2, speed, true);
+  } else if (direction == 6) {
+    setMotor(FRS, FRD1, FRD2, speed / 3, false);
+    setMotor(FLS, FLD1, FLD2, speed, false);
+    setMotor(RRS, RRD1, RRD2, speed / 3, false);
+    setMotor(RLS, RLD1, RLD2, speed, false);
+  } else if (direction == 7) {
+    setMotor(FRS, FRD1, FRD2, speed, false);
+    setMotor(FLS, FLD1, FLD2, speed / 3, false);
+    setMotor(RRS, RRD1, RRD2, speed, false);
+    setMotor(RLS, RLD1, RLD2, speed / 3, false);
   }
 }
 
