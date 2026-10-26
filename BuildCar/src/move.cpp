@@ -18,18 +18,102 @@ namespace {
 #define RLD1 7
 #define RLD2 8
 
+#define PINA 20
+#define PINB 21
+
+static unsigned long lastCmdTime = 0;
+const unsigned long CMD_TIMEOUT = 100;
+volatile int angle = 0;
+
 void setMotor(int speedPin, int d1Pin, int d2Pin, int speed, bool forward) {
   digitalWrite(d1Pin, forward ? HIGH : LOW);
   digitalWrite(d2Pin, forward ? LOW : HIGH);
   analogWrite(speedPin, speed);
 }
-} // namespace
+
+void rotateA() {
+  int b = digitalRead(PINB);
+  if (b == HIGH) {
+    angle++;
+  } else {
+    angle--;
+  }
+}
+
+// namespace
+}
 
 void initMotors() {
   pinMode(FRS, OUTPUT); pinMode(FRD1, OUTPUT); pinMode(FRD2, OUTPUT);
   pinMode(FLS, OUTPUT); pinMode(FLD1, OUTPUT); pinMode(FLD2, OUTPUT);
   pinMode(RRS, OUTPUT); pinMode(RRD1, OUTPUT); pinMode(RRD2, OUTPUT);
   pinMode(RLS, OUTPUT); pinMode(RLD1, OUTPUT); pinMode(RLD2, OUTPUT);
+  pinMode(PINA, INPUT); pinMode(PINB, INPUT);
+  attachInterrupt(0, rotateA, RISING);
+}
+
+
+
+void listenKeys() {
+  if (Serial.available() > 0) {
+      char inChar = Serial.read();
+      if (inChar == '\n' || inChar == '\r') return;
+      Serial.println("Key pressed: " + String(inChar));
+    }
+}
+
+void gameControl(){
+  if (Serial.available() > 0) {
+    char key = Serial.read();
+    Serial.println("Key pressed: " + String(key));
+    switch (key) {
+      case 'w': case 'W': move(120, 0); lastCmdTime = millis(); break; // Forward
+      case 'a': case 'A': move(120, 1); lastCmdTime = millis(); break; // Left
+      case 'd': case 'D': move(120, 2); lastCmdTime = millis(); break; // Right
+      case 's': case 'S': move(120, 3); lastCmdTime = millis(); break; // Backward
+      case 'q': case 'Q': move(120, 4); lastCmdTime = millis(); break; // Left Forward
+      case 'e': case 'E': move(120, 5); lastCmdTime = millis(); break; // Right Forward
+      case ' ': case 'x': move(0, 0);   lastCmdTime = 0;        break; // Stop
+      default: break;
+    }
+  }
+
+  // If no command has been received for a certain time, stop the motors
+  if (lastCmdTime > 0 && (millis() - lastCmdTime > CMD_TIMEOUT)) {
+    move(0, 0);
+    lastCmdTime = 0; // Reset timer
+  }
+}
+
+void moveWithKeys() {
+  if (Serial.available() > 0) {
+      char inChar = Serial.read();
+      if (inChar == '\n' || inChar == '\r') return;
+      Serial.println("Key pressed: " + String(inChar));
+      switch (inChar) {
+        case 'w':
+          move(100, 0); // Forward
+          break;
+        case 'a':
+          move(100, 1); // Left
+          break;
+        case 'd':
+          move(100, 2); // Right
+          break;
+        case 's':
+          move(100, 3); // Backward
+          break;
+        case 'q':
+          move(100, 4); // Left Forward
+          break;
+        case 'e':
+          move(100, 5); // Right Forward
+          break;
+        default:
+          move(0, 0); // Stop
+          break;
+      }
+    }
 }
 
 void move(int speed, int direction) {

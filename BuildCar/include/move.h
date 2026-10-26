@@ -5,3 +5,6 @@ void initMotors();
 // 4 left forward, 5 right forward.
 void move(int speed, int direction);
 void runMovementDemo();
+void listenKeys();
+void moveWithKeys();
+void gameControl();

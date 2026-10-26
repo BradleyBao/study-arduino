@@ -22,7 +22,6 @@ void initSensors() {
     pinMode(Left_PR_sensor_Pin, INPUT);
     pinMode(Center_PR_sensor_Pin, INPUT);
     pinMode(Right_PR_sensor_Pin, INPUT);
-    Serial.begin(9600);
 }
 
 void setServo(int angle) {
