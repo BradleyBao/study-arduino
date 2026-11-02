@@ -1,0 +1,49 @@
+#include <Arduino.h>
+#include "move.h"
+#include "sensors.h"
+#include "functions.h"
+
+namespace {
+const int CRUISE_SPEED = 200;
+const int TURN_SPEED = 160;
+const int RIGHT_WHEEL_TRIM = 218;
+const int TARGET_DISTANCE_CM = 40;
+const int DISTANCE_DEADBAND_CM = 5;
+const int LEFT_STEERING_GAIN = 6;
+const int RIGHT_STEERING_GAIN = 2;
+const int MAX_LEFT_STEERING_CORRECTION = 80;
+const int MAX_RIGHT_STEERING_CORRECTION = 30;
+}
+
+void setup() {
+  initMotors();
+  initSensors();
+  Serial.begin(9600);
+  initializeControl();
+  setServo(135);
+  delay(300);
+}
+
+void loop() {
+  const int distance = getUltrasonicDistance();
+  int correction = 0;
+  if (distance > 0) {
+    const int distanceError = TARGET_DISTANCE_CM - distance;
+    if (abs(distanceError) > DISTANCE_DEADBAND_CM) {
+      if (distanceError < 0) {
+        correction = constrain(distanceError * LEFT_STEERING_GAIN,
+                               -MAX_LEFT_STEERING_CORRECTION, 0);
+      } else {
+        correction = constrain(distanceError * RIGHT_STEERING_GAIN,
+                               0, MAX_RIGHT_STEERING_CORRECTION);
+      }
+    }
+  }
+
+  const int baseSpeed = correction == 0 ? CRUISE_SPEED : TURN_SPEED;
+  const int baseRightSpeed = baseSpeed * RIGHT_WHEEL_TRIM / 255;
+  const int leftSpeed = constrain(baseSpeed + correction, 0, 255);
+  const int rightSpeed = constrain(baseRightSpeed - correction, 0, 255);
+  move(baseSpeed, 0, leftSpeed, leftSpeed, rightSpeed, rightSpeed);
+  delay(50);
+}

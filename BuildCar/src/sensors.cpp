@@ -6,8 +6,9 @@ namespace {
 constexpr int SERVO_PIN = 13;
 constexpr int LOWER_LIMIT = 650;
 constexpr int UPPER_LIMIT = 2800;
-constexpr int US_Echo_PIN = 31;
+constexpr int US_Echo_PIN = 38;
 constexpr int US_Trig_PIN = 30;
+constexpr unsigned long US_ECHO_TIMEOUT_US = 25000UL;
 constexpr int Left_PR_sensor_Pin = 2;
 constexpr int Center_PR_sensor_Pin = 3;
 constexpr int Right_PR_sensor_Pin = 4;
@@ -17,6 +18,7 @@ Servo servo;
 
 void initSensors() {
     servo.attach(SERVO_PIN, LOWER_LIMIT, UPPER_LIMIT);
+    servo.write(90);
     pinMode(US_Echo_PIN, INPUT);
     pinMode(US_Trig_PIN, OUTPUT);
     pinMode(Left_PR_sensor_Pin, INPUT);
@@ -44,14 +46,7 @@ void printReflectorReadings() {
 }
 
 void printUltrasonicDistance() {
-  digitalWrite(US_Trig_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(US_Trig_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(US_Trig_PIN, LOW);
-
-  long duration = pulseIn(US_Echo_PIN, HIGH);
-  long distance = duration * 0.034 / 2; // Convert to cm
+  const int distance = getUltrasonicDistance();
   Serial.print("Distance: "); Serial.print(distance); Serial.println(" cm");
 }
 
@@ -62,8 +57,11 @@ int getUltrasonicDistance() {
   delayMicroseconds(10);
   digitalWrite(US_Trig_PIN, LOW);
 
-  long duration = pulseIn(US_Echo_PIN, HIGH);
-  long distance = duration * 0.034 / 2; // Convert to cm
+  const unsigned long duration = pulseIn(US_Echo_PIN, HIGH, US_ECHO_TIMEOUT_US);
+  if (duration == 0) {
+    return -1; // Missing echo is not proof that the path is clear.
+  }
+  const int distance = duration * 0.034 / 2; // Convert to cm
   return distance;
 }
 
